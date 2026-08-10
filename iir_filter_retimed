@@ -1,0 +1,45 @@
+module iir_filter_retimed(
+    input clk,
+    input rst,
+    input [3:0] x_in,
+    output reg [7:0] y_out
+);
+
+// Input delay
+reg [3:0] x0, x1, x2, x3;
+reg [7:0] y1;
+
+// Pipeline registers
+reg [7:0] stage1;
+reg [7:0] stage2;
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        x0 <= 0; x1 <= 0; x2 <= 0; x3 <= 0;
+        y1 <= 0;
+        stage1 <= 0;
+        stage2 <= 0;
+        y_out <= 0;
+    end
+    else begin
+        // Input shift
+        x3 <= x2;
+        x2 <= x1;
+        x1 <= x0;
+        x0 <= x_in;
+
+        // Stage 1 (partial sum)
+        stage1 <= (2*x0) + (2*x1);
+
+        // Stage 2 (remaining + feedback)
+        stage2 <= stage1 + (2*x2) + (2*x3) + y1;
+
+        // Output
+        y_out <= stage2;
+
+        // Feedback
+        y1 <= y_out;
+    end
+end
+
+endmodule
