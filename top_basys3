@@ -1,0 +1,31 @@
+module top_basys3(
+    input CLK100MHZ,
+    input btnC,
+    input [3:0] sw,
+    output [6:0] seg,
+    output [3:0] an
+);
+
+    wire slow_clk;
+    wire [7:0] iir_out;
+
+    clk_divider1 CD(
+        .clk(CLK100MHZ),
+        .slow_clk(slow_clk)
+    );
+
+    iir_filter_retimed IIR(
+        .clk(slow_clk),
+        .rst(btnC),
+        .x_in(sw),
+        .y_out(iir_out)
+    );
+
+    seven_seg_decimal DISP(
+        .clk(CLK100MHZ),
+        .value(iir_out),
+        .seg(seg),
+        .an(an)
+    );
+
+endmodule
